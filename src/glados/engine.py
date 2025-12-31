@@ -24,6 +24,8 @@ from .TTS import tts_glados, tts_kokoro
 from .utils import spoken_text_converter as stc
 from .utils.resources import resource_path
 
+from .utils.audio_effects import play_audio_sound_effect 
+
 logger.remove(0)
 logger.add(sys.stderr, level="SUCCESS")
 
@@ -204,12 +206,25 @@ class Glados:
         audio_thread = threading.Thread(target=self.process_audio_thread)
         audio_thread.start()
 
+#######
+#######
+####### plays initial announcement if provided
         if announcement:
+            """
+            Preset refers to a sound effect played before the announcement. 
+            Can optionally be played overlapping the tts spoken audio. 
+            """
+            play_audio_sound_effect(path=("src/glados/assets/sounds/LockChime-car-lock-effect.wav"), sample_rate=self._tts.sample_rate, interruptible=self.interruptible)
+
+            # now plays the announcement
             audio = self._tts.generate_speech_audio(announcement)
             logger.success(f"TTS text: {announcement}")
             sd.play(audio, self._tts.sample_rate)
             if not self.interruptible:
                 sd.wait()
+
+        
+
 
         def audio_callback_for_sd_input_stream(
             indata: np.dtype[np.float32],
